@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 
 try
 {
@@ -22,8 +21,7 @@ try
     #endregion
 
     #region DataBase
-   // builder.Services.AddDbContext<NorthwindContext>(options =>
-   //options.UseSqlServer(config.GetConnectionString("NorthwindConnection")));
+    builder.Services.AddDbContext<TodoContext>(options => options.UseSqlServer(config.GetConnectionString("NorthwindConnection")));
     #endregion
 
     // Add services to the container.
