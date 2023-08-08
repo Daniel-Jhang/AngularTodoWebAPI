@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using AngularTodoWebAPI.DataTransferObject;
+using System.Threading.Tasks;
 
 namespace AngularTodoWebAPI.Controllers
 {
@@ -7,16 +8,22 @@ namespace AngularTodoWebAPI.Controllers
     public class TodoListController : ControllerBase
     {
         [HttpGet]
-        public async Task Get()
+        public async Task<ApiResultDataModel> Get()
         {
             try
             {
+                var result = new ApiResultDataModel();
 
+                return result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return new ApiResultDataModel
+                {
+                    IsSuccess = false,
+                    ErrorMessage = ex.Message,
+                    ErrorMessageDetail = ex.ToString()
+                };
             }
         }
     }
