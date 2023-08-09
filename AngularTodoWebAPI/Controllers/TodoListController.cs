@@ -1,6 +1,4 @@
-﻿using AngularTodoWebAPI.Services;
-
-namespace AngularTodoWebAPI.Controllers
+﻿namespace AngularTodoWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
