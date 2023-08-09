@@ -8,3 +8,8 @@ global using System;
 global using System.IO;
 global using Microsoft.EntityFrameworkCore;
 global using AngularTodoWebAPI.Models;
+global using AngularTodoWebAPI.DataTransferObject;
+global using System.Collections.Generic;
+global using System.Threading.Tasks;
+global using AngularTodoWebAPI.DataAccessObject;
+global using System.Linq;

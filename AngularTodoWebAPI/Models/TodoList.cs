@@ -11,7 +11,7 @@ public partial class TodoList
 
     public bool Status { get; set; }
 
-    public string Context { get; set; } = null!;
-
     public bool Editing { get; set; }
+
+    public string Context { get; set; } = null!;
 }
