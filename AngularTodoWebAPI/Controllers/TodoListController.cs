@@ -80,12 +80,12 @@ namespace AngularTodoWebAPI.Controllers
         }
 
         [HttpDelete]
-        public async Task<ApiResultDataModel> Delete(Guid productId)
+        public async Task<ApiResultDataModel> Delete(Guid todoRecordId)
         {
             try
             {
                 var result = new ApiResultDataModel();
-                var data = await _todoListService.DeleteProduct(productId);
+                var data = await _todoListService.DeleteProduct(todoRecordId);
                 result.Data = data;
                 result.IsSuccess = true;
                 return result;

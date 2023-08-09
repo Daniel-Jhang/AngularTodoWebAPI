@@ -13,43 +13,31 @@
 
         public async Task<TodoListDto> CreateTodoRecord(TodoListDto newTodo)
         {
+            using var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
-                try
+                newTodo.TodoId = Guid.NewGuid();
+                var todoRecordToDB = new TodoList
                 {
-                    TodoList todoRecordToDB = new TodoList()
-                    {
-                        TodoId = new Guid(),
-                        Status = newTodo.Status,
-                        Context = newTodo.Context,
-                        Editing = newTodo.Editing
-                    };
+                    TodoId = newTodo.TodoId,
+                    Status = newTodo.Status,
+                    Context = newTodo.Context,
+                    Editing = newTodo.Editing
+                };
 
-                    await _dbContext.TodoLists.AddAsync(todoRecordToDB);
-                    await _dbContext.SaveChangesAsync();
+                await _dbContext.TodoLists.AddAsync(todoRecordToDB);
+                await _dbContext.SaveChangesAsync();
 
-                    await dbTransaction.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    await dbTransaction.RollbackAsync();
-                    _logger.Error($"資料庫交易(Transaction)時發生問題: {ex}");
-                    throw new Exception($"資料庫交易(Transaction)時發生問題", ex);
-                }
-                finally
-                {
-                    await dbTransaction.DisposeAsync();
-                }
-
-                //product.ProductId = GetProductByName(product.ProductName).Result.ProductId;
-                return newTodo;
+                await dbTransaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.ToString());
+                await dbTransaction.RollbackAsync();
+                _logger.Error($"資料庫交易(Transaction)時發生問題: {ex}");
+                throw new Exception("資料庫交易(Transaction)時發生問題", ex);
             }
-
+           
+            return newTodo;
         }
 
         public async Task<TodoList> GetTodoRecordById(Guid todoRecordId)
@@ -75,11 +63,6 @@
             try
             {
                 var todoRecord = await _dbContext.TodoLists.SingleOrDefaultAsync(x => x.Context == context);
-                if (todoRecord == null)
-                {
-                    _logger.Error($"找不到紀錄， {context} 不存在");
-                    throw new Exception($"找不到紀錄， {context} 不存在");
-                }
                 return todoRecord;
             }
             catch (Exception ex)

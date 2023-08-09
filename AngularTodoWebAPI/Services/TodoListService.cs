@@ -32,10 +32,10 @@
             return recordToUpdate;
         }
 
-        public async Task<List<TodoListDto>> DeleteProduct(Guid productId)
+        public async Task<List<TodoListDto>> DeleteProduct(Guid todoRecordId)
         {
             // Business Logic
-            var result = await _todoListDao.DeleteTodoRecord(productId);
+            var result = await _todoListDao.DeleteTodoRecord(todoRecordId);
             return result;
         }
     }
