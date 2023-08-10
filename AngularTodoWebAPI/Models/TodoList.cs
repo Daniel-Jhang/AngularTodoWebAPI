@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AngularTodoWebAPI.Models;
+﻿namespace AngularTodoWebAPI.Models;
 
 public partial class TodoList
 {
