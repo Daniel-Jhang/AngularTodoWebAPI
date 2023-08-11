@@ -1,4 +1,6 @@
 
+using AngularTodoWebAPI.Factory;
+
 try
 {
     var builder = WebApplication.CreateBuilder(args);
@@ -21,11 +23,17 @@ try
     #endregion
 
     #region DataBase
-    builder.Services.AddDbContext<TodoContext>(options => options.UseSqlServer(config.GetConnectionString("TODOConnection")));
+    builder.Services.AddDbContext<TodoContext>(options => options.UseSqlServer(config.GetConnectionString("TODOConnection_MSSQL")));
+    builder.Services.AddScoped<ITodoListDaoFactory, TodoListMSSQLDaoFactory>();
+    builder.Services.AddScoped<TodoListMSSQLDao>();
+
+    builder.Services.AddDbContext<DataContext>(options => options.UseOracle(config.GetConnectionString("TODOConnection_Oracle")));
+    builder.Services.AddScoped<ITodoListDaoFactory, TodoListOracleDaoFactory>();
+    builder.Services.AddScoped<TodoListOracleDao>();
     #endregion
 
     // Add services to the container.
-    builder.Services.AddScoped<ITodoListDao, TodoListMSSQLDao>();
+
     builder.Services.AddScoped<ITodoListService, TodoListService>();
 
 

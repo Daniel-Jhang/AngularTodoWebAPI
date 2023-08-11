@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-
-namespace AngularTodoWebAPI.Models;
+﻿namespace AngularTodoWebAPI.Models;
 
 public partial class TodoContext : DbContext
 {

@@ -1,4 +1,5 @@
-﻿namespace AngularTodoWebAPI.DataAccessObject
+﻿using TodoList = AngularTodoWebAPI.Models.TodoList;
+namespace AngularTodoWebAPI.DataAccessObject
 {
     public class TodoListMSSQLDao : ITodoListDao
     {
@@ -36,39 +37,30 @@
                 _logger.Error($"資料庫交易(Transaction)時發生問題: {ex}");
                 throw new Exception("資料庫交易(Transaction)時發生問題", ex);
             }
-           
+
             return newTodo;
         }
 
-        public async Task<TodoList> GetTodoRecordById(Guid todoRecordId)
+        public async Task<TodoListDto> GetTodoRecord(Guid? todoRecordId = null, string? context = null)
         {
-            try
+            if (!todoRecordId.HasValue && string.IsNullOrEmpty(context))
             {
-                var todoRecord = await _dbContext.TodoLists.SingleOrDefaultAsync(x => x.TodoId == todoRecordId);
-                if (todoRecord == null)
-                {
-                    _logger.Error($"找不到紀錄，紀錄編號: {todoRecordId} 不存在");
-                    throw new Exception($"找不到紀錄，紀錄編號: {todoRecordId} 不存在");
-                }
-                return todoRecord;
+                return new TodoListDto();
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.ToString());
-            }
-        }
+            var record = todoRecordId.HasValue ? await GetTodoRecordById(todoRecordId.Value) : null;
+            record ??= !string.IsNullOrEmpty(context) ? await GetTodoRecordByContext(context) : null;
 
-        public async Task<TodoList> GetTodoRecordByContext(string context)
-        {
-            try
+            if (record == null)
             {
-                var todoRecord = await _dbContext.TodoLists.SingleOrDefaultAsync(x => x.Context == context);
-                return todoRecord;
+                return new TodoListDto();
             }
-            catch (Exception ex)
+
+            return new TodoListDto
             {
-                throw new Exception(ex.ToString());
-            }
+                Status = record.Status,
+                Context = record.Context,
+                Editing = record.Editing
+            };
         }
 
         public async Task<List<TodoListDto>> GetAllTodoList()
@@ -156,6 +148,37 @@
 
                 var result = await GetAllTodoList();
                 return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
+        private async Task<TodoList> GetTodoRecordById(Guid todoRecordId)
+        {
+            try
+            {
+                var todoRecord = await _dbContext.TodoLists.SingleOrDefaultAsync(x => x.TodoId == todoRecordId);
+                if (todoRecord == null)
+                {
+                    _logger.Error($"找不到紀錄，紀錄編號: {todoRecordId} 不存在");
+                    throw new Exception($"找不到紀錄，紀錄編號: {todoRecordId} 不存在");
+                }
+                return todoRecord;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
+        private async Task<TodoList> GetTodoRecordByContext(string context)
+        {
+            try
+            {
+                var todoRecord = await _dbContext.TodoLists.SingleOrDefaultAsync(x => x.Context == context);
+                return todoRecord = null!;
             }
             catch (Exception ex)
             {

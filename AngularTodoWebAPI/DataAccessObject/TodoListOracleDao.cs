@@ -1,35 +1,189 @@
-﻿namespace AngularTodoWebAPI.DataAccessObject
+﻿using TodoList = AngularTodoWebAPI.Data.TodoList;
+namespace AngularTodoWebAPI.DataAccessObject
 {
     public class TodoListOracleDao : ITodoListDao
     {
-        public Task<TodoListDto> CreateTodoRecord(TodoListDto newTodo)
+        private readonly DataContext _dbContext;
+        private readonly ILogger _logger;
+
+        public TodoListOracleDao(DataContext dbContext, ILogger logger)
         {
-            throw new NotImplementedException();
+            this._dbContext = dbContext;
+            this._logger = logger;
         }
 
-        public Task<List<TodoListDto>> DeleteTodoRecord(Guid todoRecordId)
+        public async Task<TodoListDto> CreateTodoRecord(TodoListDto newTodo)
         {
-            throw new NotImplementedException();
+            using var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                newTodo.TodoId = Guid.NewGuid();
+                var todoRecordToDB = new TodoList
+                {
+                    TodoId = newTodo.TodoId,
+                    Status = newTodo.Status,
+                    Context = newTodo.Context,
+                    Editing = newTodo.Editing
+                };
+
+                await _dbContext.Todolists.AddAsync(todoRecordToDB);
+                await _dbContext.SaveChangesAsync();
+
+                await dbTransaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await dbTransaction.RollbackAsync();
+                _logger.Error($"資料庫交易(Transaction)時發生問題: {ex}");
+                throw new Exception("資料庫交易(Transaction)時發生問題", ex);
+            }
+
+            return newTodo;
         }
 
-        public Task<List<TodoListDto>> GetAllTodoList()
+        public async Task<TodoListDto> GetTodoRecord(Guid? todoRecordId = null, string? context = null)
         {
-            throw new NotImplementedException();
+            if (!todoRecordId.HasValue && string.IsNullOrEmpty(context))
+            {
+                return new TodoListDto();
+            }
+            var record = todoRecordId.HasValue ? await GetTodoRecordById(todoRecordId.Value) : null;
+            record ??= !string.IsNullOrEmpty(context) ? await GetTodoRecordByContext(context) : null;
+
+            if (record == null)
+            {
+                return new TodoListDto();
+            }
+
+            return new TodoListDto
+            {
+                Status = record.Status,
+                Context = record.Context,
+                Editing = record.Editing
+            };
         }
 
-        public Task<TodoList> GetTodoRecordByContext(string context)
+        public async Task<List<TodoListDto>> GetAllTodoList()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var todoList = await _dbContext.Todolists.Select(x => new TodoListDto
+                {
+                    TodoId = x.TodoId,
+                    Status = x.Status,
+                    Context = x.Context,
+                    Editing = x.Editing
+                }).OrderBy(x => x.TodoId).AsNoTracking().ToListAsync();
+
+                return todoList;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
         }
 
-        public Task<TodoList> GetTodoRecordById(Guid todoRecordId)
+        public async Task<TodoListDto> UpdateTodoRecord(TodoListDto todoRecord)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var todoRecordToUpdate = await GetTodoRecordById(todoRecord.TodoId);
+
+                var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
+                try
+                {
+                    todoRecordToUpdate.Status = todoRecord.Status;
+                    todoRecordToUpdate.Editing = todoRecord.Editing;
+                    todoRecordToUpdate.Context = todoRecord.Context;
+
+                    await _dbContext.SaveChangesAsync();
+                    await dbTransaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    // 發生例外時進行回滾
+                    await dbTransaction.RollbackAsync();
+                    // 將例外訊息記錄至日誌
+                    _logger.Error($"資料庫交易(Transaction)時發生問題: {ex}");
+                    throw new Exception($"資料庫交易(Transaction)時發生問題", ex);
+                }
+                finally
+                {
+                    await dbTransaction.DisposeAsync();
+                }
+
+                return todoRecord;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
         }
 
-        public Task<TodoListDto> UpdateTodoRecord(TodoListDto todoRecord)
+        public async Task<List<TodoListDto>> DeleteTodoRecord(Guid todoRecordId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var todoRecordToDelete = await GetTodoRecordById(todoRecordId);
+
+                var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
+                try
+                {
+                    _dbContext.Todolists.Remove(todoRecordToDelete);
+                    await _dbContext.SaveChangesAsync();
+                    await dbTransaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    // 發生例外時進行回滾
+                    await dbTransaction.RollbackAsync();
+                    // 將例外訊息記錄至日誌
+                    _logger.Error($"資料庫交易(Transaction)時發生問題: {ex}");
+                    throw new Exception($"資料庫交易(Transaction)時發生問題", ex);
+                }
+                finally
+                {
+                    await dbTransaction.DisposeAsync();
+                }
+
+                var result = await GetAllTodoList();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
+        private async Task<TodoList> GetTodoRecordById(Guid todoRecordId)
+        {
+            try
+            {
+                var todoRecord = await _dbContext.Todolists.SingleOrDefaultAsync(x => x.TodoId == todoRecordId);
+                if (todoRecord == null)
+                {
+                    _logger.Error($"找不到紀錄，紀錄編號: {todoRecordId} 不存在");
+                    throw new Exception($"找不到紀錄，紀錄編號: {todoRecordId} 不存在");
+                }
+                return todoRecord;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
+        private async Task<TodoList> GetTodoRecordByContext(string context)
+        {
+            try
+            {
+                var todoRecord = await _dbContext.Todolists.SingleOrDefaultAsync(x => x.Context == context);
+                return todoRecord = null!;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
         }
     }
 }
