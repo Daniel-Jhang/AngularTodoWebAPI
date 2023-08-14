@@ -1,32 +1,17 @@
 ﻿namespace AngularTodoWebAPI.Factory
 {
-    public class TodoListMSSQLDaoFactory : ITodoListDaoFactory
+    public class TodoListDaoFactory<TDao> : ITodoListDaoFactory where TDao : ITodoListDao
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public TodoListMSSQLDaoFactory(IServiceProvider serviceProvider)
+        public TodoListDaoFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
         public ITodoListDao Create()
         {
-            return _serviceProvider.GetRequiredService<TodoListMSSQLEFCoreDao>();
-        }
-    }
-
-    public class TodoListOracleDaoFactory : ITodoListDaoFactory
-    {
-        private readonly IServiceProvider _serviceProvider;
-
-        public TodoListOracleDaoFactory(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
-        public ITodoListDao Create()
-        {
-            return _serviceProvider.GetRequiredService<TodoListOracleEFCoreDao>();
+            return _serviceProvider.GetRequiredService<TDao>();
         }
     }
 }
