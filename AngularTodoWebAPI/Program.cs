@@ -1,5 +1,4 @@
-
-using AngularTodoWebAPI.Factory;
+using Microsoft.Extensions.Configuration;
 
 try
 {
@@ -23,13 +22,18 @@ try
     #endregion
 
     #region DataBase
+    // EF Core
     builder.Services.AddDbContext<TodoContext>(options => options.UseSqlServer(config.GetConnectionString("TODOConnection_MSSQL")));
     builder.Services.AddScoped<ITodoListDaoFactory, TodoListDaoFactory<TodoListMSSQLEFCoreDao>>();
     builder.Services.AddScoped<TodoListMSSQLEFCoreDao>();
 
-    builder.Services.AddDbContext<DataContext>(options => options.UseOracle(config.GetConnectionString("TODOConnection_Oracle")));
-    builder.Services.AddScoped<ITodoListDaoFactory, TodoListDaoFactory<TodoListOracleEFCoreDao>>();
-    builder.Services.AddScoped<TodoListOracleEFCoreDao>();
+    //builder.Services.AddDbContext<DataContext>(options => options.UseOracle(config.GetConnectionString("TODOConnection_Oracle")));
+    //builder.Services.AddScoped<ITodoListDaoFactory, TodoListDaoFactory<TodoListOracleEFCoreDao>>();
+    //builder.Services.AddScoped<TodoListOracleEFCoreDao>();
+
+
+    // Dapper
+    builder.Services.AddScoped<ICustomConnectionFactory>(_ => new CustomConnectionFactory(() => config.GetConnectionString("TODOConnection_MSSQL")));
     #endregion
 
     // Add services to the container.

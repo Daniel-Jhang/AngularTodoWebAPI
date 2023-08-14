@@ -1,6 +1,4 @@
-﻿using AngularTodoWebAPI.Factory;
-
-namespace AngularTodoWebAPI.Services
+﻿namespace AngularTodoWebAPI.Services
 {
     public class TodoListService : ITodoListService
     {
