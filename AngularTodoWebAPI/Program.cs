@@ -25,11 +25,11 @@ try
     #region DataBase
     builder.Services.AddDbContext<TodoContext>(options => options.UseSqlServer(config.GetConnectionString("TODOConnection_MSSQL")));
     builder.Services.AddScoped<ITodoListDaoFactory, TodoListMSSQLDaoFactory>();
-    builder.Services.AddScoped<TodoListMSSQLDao>();
+    builder.Services.AddScoped<TodoListMSSQLEFCoreDao>();
 
     builder.Services.AddDbContext<DataContext>(options => options.UseOracle(config.GetConnectionString("TODOConnection_Oracle")));
     builder.Services.AddScoped<ITodoListDaoFactory, TodoListOracleDaoFactory>();
-    builder.Services.AddScoped<TodoListOracleDao>();
+    builder.Services.AddScoped<TodoListOracleEFCoreDao>();
     #endregion
 
     // Add services to the container.

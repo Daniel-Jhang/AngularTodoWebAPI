@@ -1,12 +1,12 @@
-﻿using TodoList = AngularTodoWebAPI.Models.TodoList;
+﻿using TodoList = AngularTodoWebAPI.Data.TodoList;
 namespace AngularTodoWebAPI.DataAccessObject
 {
-    public class TodoListMSSQLDao : ITodoListDao
+    public class TodoListOracleEFCoreDao : ITodoListDao
     {
-        private readonly TodoContext _dbContext;
+        private readonly DataContext _dbContext;
         private readonly ILogger _logger;
 
-        public TodoListMSSQLDao(TodoContext dbContext, ILogger logger)
+        public TodoListOracleEFCoreDao(DataContext dbContext, ILogger logger)
         {
             this._dbContext = dbContext;
             this._logger = logger;
@@ -26,7 +26,7 @@ namespace AngularTodoWebAPI.DataAccessObject
                     Editing = newTodo.Editing
                 };
 
-                await _dbContext.TodoLists.AddAsync(todoRecordToDB);
+                await _dbContext.Todolists.AddAsync(todoRecordToDB);
                 await _dbContext.SaveChangesAsync();
 
                 await dbTransaction.CommitAsync();
@@ -67,7 +67,7 @@ namespace AngularTodoWebAPI.DataAccessObject
         {
             try
             {
-                var todoList = await _dbContext.TodoLists.Select(x => new TodoListDto
+                var todoList = await _dbContext.Todolists.Select(x => new TodoListDto
                 {
                     TodoId = x.TodoId,
                     Status = x.Status,
@@ -129,7 +129,7 @@ namespace AngularTodoWebAPI.DataAccessObject
                 var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
                 try
                 {
-                    _dbContext.TodoLists.Remove(todoRecordToDelete);
+                    _dbContext.Todolists.Remove(todoRecordToDelete);
                     await _dbContext.SaveChangesAsync();
                     await dbTransaction.CommitAsync();
                 }
@@ -159,7 +159,7 @@ namespace AngularTodoWebAPI.DataAccessObject
         {
             try
             {
-                var todoRecord = await _dbContext.TodoLists.SingleOrDefaultAsync(x => x.TodoId == todoRecordId);
+                var todoRecord = await _dbContext.Todolists.SingleOrDefaultAsync(x => x.TodoId == todoRecordId);
                 if (todoRecord == null)
                 {
                     _logger.Error($"找不到紀錄，紀錄編號: {todoRecordId} 不存在");
@@ -177,7 +177,7 @@ namespace AngularTodoWebAPI.DataAccessObject
         {
             try
             {
-                var todoRecord = await _dbContext.TodoLists.SingleOrDefaultAsync(x => x.Context == context);
+                var todoRecord = await _dbContext.Todolists.SingleOrDefaultAsync(x => x.Context == context);
                 return todoRecord = null!;
             }
             catch (Exception ex)

@@ -11,7 +11,7 @@
 
         public ITodoListDao Create()
         {
-            return _serviceProvider.GetRequiredService<TodoListMSSQLDao>();
+            return _serviceProvider.GetRequiredService<TodoListMSSQLEFCoreDao>();
         }
     }
 
@@ -26,7 +26,7 @@
 
         public ITodoListDao Create()
         {
-            return _serviceProvider.GetRequiredService<TodoListOracleDao>();
+            return _serviceProvider.GetRequiredService<TodoListOracleEFCoreDao>();
         }
     }
 }
